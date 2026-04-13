@@ -114,4 +114,24 @@ class UserServiceTest {
         
         verify(userServiceSpy).isValidEmail("test@example.com");
     }
+
+    @Test
+    void testMultipleUserOperations() {
+        when(userRepository.emailExists(anyString()))
+            .thenReturn(false)
+            .thenReturn(true);
+
+        when(emailService.sendWelcomeEmail(anyString(), anyString()))
+            .thenReturn(true);
+
+        assertTrue(userService.registerUser("user1@example.com", "User One"), 
+            "La primera registración debería haber tenido éxito");
+
+        assertFalse(userService.registerUser("user1@example.com", "User Two"), 
+            "La segunda registración con el mismo email debería fallar");
+
+        verify(userRepository, times(2)).emailExists("user1@example.com");
+        
+        verify(emailService, times(1)).sendWelcomeEmail(anyString(), anyString());
+    }
 }
